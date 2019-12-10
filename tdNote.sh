@@ -1,13 +1,12 @@
 #!/bin/bash
+#######################################
+# bash exam
+# author : kamil caglar
+# mail : kamilcaglar.contact@gmail.com
+#
+# Note : `echo $'\n> ' this print a new line and > symbol
+######################################
 
-#Get all the users from user file
-USERSARRAY=()
-while IFS=$'\t' read -r -a myArray; do
-  USERSARRAY+=($myArray)
-done <users
-for i in "${users[@]}"; do
-  echo $i
-done
 
 #######################################
 # Verify if something is in array passed as parameter
@@ -29,8 +28,58 @@ array_contains() {
     fi
   done
   return $in
-  #echo $in
 }
+
+function join_by { local IFS="$1"; shift; echo "$*"; }
+
+choose_group() {
+  #Get all the groups from groups file
+  GROUPSARRAY=()
+  while IFS=$'\t' read -r -a myArray; do
+    GROUPSARRAY+=($myArray)
+  done <groups
+  GROUPSARRAY=("${GROUPSARRAY[@]:1}") #removed the 1st element
+
+  echo "You are going to choose the groups of your user"
+
+  chosenGroupsArray=()
+
+  while true; do
+    echo "Here are the different groups"
+    (
+      IFS=$'\n'
+      echo "${GROUPSARRAY[*]}"
+    )
+    read -p "Choose one `echo $'\n> '`" choice
+
+    array_contains GROUPSARRAY "$choice"
+    result=$?
+
+    if [ "$result" = "0" ]; then
+      chosenGroupsArray+=($choice)
+      read -p "OK, do you want to add more ? (y/n) `echo $'\n> '`" continue
+        if [ "$continue" = 'n' ]; then
+          break
+        fi
+    else
+      echo "This group does not exist, please type anything and try again."
+      read -p "`echo $'> '`"
+    fi
+
+  done
+
+
+  var3=$(join_by , "${chosenGroupsArray[@]}")
+  echo "$var3"
+}
+
+
+#Get all the users from users file
+USERSARRAY=()
+while IFS=$'\t' read -r -a myArray; do
+  USERSARRAY+=($myArray)
+done <users
+unset "USERSARRAY[0]" #removed the 1st element
 
 #######################################
 # Main function
@@ -45,12 +94,14 @@ echo "Bienvenue dans le gestionnaire d'utilisateur"
 
 action='p'
 while [ $action != 'q' ]; do
-  echo "Que voulez-vous faire ?"
-  echo "a -> Ajouter un user"
-  echo "p -> Afficher les users"
-  echo "q -> Quitter"
-  read -p "Entrez votre choix" action
+  echo "What do you want to do ?"
+  echo "a -> Add an user"
+  echo "p -> Print the users"
+  echo "q -> Exit"
+  read -p "Enter your choice `echo $'\n> '`" action
+  #Clear console
   clear && echo -en "\e[3J"
+
   if [ $action = 'p' ]; then
     INPUT=users
     OLDIFS=$IFS
@@ -69,10 +120,11 @@ while [ $action != 'q' ]; do
     IFS=$OLDIFS
   fi
   if [ $action = 'a' ]; then
-    echo "Vous allez ajouter un user"
+
+    echo "You are going to add an user"
 
     while true; do
-      read -p 'Login :' login
+      read -p "Login : `echo $'\n> '`" login
 
       #Récupération des users
       USERSARRAY=()
@@ -96,14 +148,13 @@ while [ $action != 'q' ]; do
     done
 
     while true; do
-
-      read -p 'Password : ' password
+      read -p "Password : `echo $'\n> '`" password
 
       if ! [[ $password =~ [A-Za-z0-9@\#$%\&*+=-]{8,} && $password =~ [a-z] && $password =~ [A-Z] && $password =~ [0-9] && $password =~ [@\#$%\&*+=-] ]]; then
         echo "Please use at least 8 characters and 1 captial letter and 1 minuscule and 1 special character [@\#$%\&*+=-] and a number [0-9]."
       else
-        read -p 'Confirm password : ' passwordConfirm
-        if [ $password = $passwordConfirm ]; then
+        read -p "Confirm password : `echo $'\n> '`" passwordConfirm
+        if [ "$password" = "$passwordConfirm" ]; then
           break
         else
           echo "The passwords must be the same, please try again."
@@ -112,6 +163,10 @@ while [ $action != 'q' ]; do
 
     done
 
+    choose_group
+    #var2=$(choose_group)
+
+    echo $var2
     #Write results in the file
     echo -e "$login\t$password" >>users
   fi
