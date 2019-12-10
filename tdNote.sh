@@ -71,7 +71,7 @@ while [ $action != 'q' ]; do
   if [ $action = 'a' ]; then
     echo "Vous allez ajouter un user"
 
-    while [ 1 ]; do
+    while true; do
       read -p 'Login :' login
 
       #Récupération des users
@@ -83,20 +83,22 @@ while [ $action != 'q' ]; do
       array_contains USERSARRAY "$login"
       var=$?
 
-      if [ "$var" = "1" ] && [[ $login =~ ^[a-z]+([a-z0-9]){2,}$ ]]; then
-        break
+      if [ "$var" = "1" ]; then
+        if [[ $login =~ ^[a-z]+([a-z0-9]){2,}$ ]]; then
+          break
+        else
+          echo "Please use at least 2 characters in lowercase."
+        fi
       else
-        echo "Recommencez"
+        echo "This user is already registered."
       fi
 
     done
 
-    while [ 1 ]; do
+    while true; do
 
       read -p 'Password : ' password
-      #if [ "${password//[^@#$%&*+=-]/}" ] && [ ! "${password}" = "${password^^}" ] && [ ! "${password}" = "${password,,}" ] && [ "${password//[^0-9]/}" ]; then
-      #  [[ $password =~ ^........+$ ]] && break || echo "Veuillez recommencer"
-      #fi
+
       if ! [[ $password =~ [A-Za-z0-9@\#$%\&*+=-]{8,} && $password =~ [a-z] && $password =~ [A-Z] && $password =~ [0-9] && $password =~ [@\#$%\&*+=-] ]]; then
         echo "Please use at least 8 characters and 1 captial letter and 1 minuscule and 1 special character [@\#$%\&*+=-] and a number [0-9]."
       else
@@ -110,6 +112,7 @@ while [ $action != 'q' ]; do
 
     done
 
+    #Write results in the file
     echo -e "$login\t$password" >>users
   fi
 done
